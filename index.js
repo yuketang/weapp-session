@@ -1,11 +1,14 @@
 const co = require('co');
 const merge = require('merge');
+const promisify = require('es6-promisify');
 const config = require('./config');
-const { headers, errors } = require('./constants');
-const makeStore = require('./lib/makeStore');
 const sha1 = require('./lib/sha1');
+const needle = require('./lib/needle');
+const makeStore = require('./lib/makeStore');
 const wrapError = require('./lib/wrapError');
+const { headers, errors } = require('./constants');
 const jscode2session = require('./lib/jscode2session');
+const WXBizDataCrypt = require('./lib/WXBizDataCrypt');
 
 let store;
 
@@ -19,12 +22,15 @@ const handler = co.wrap(function *(req, res, next) {
     let code = String(req.header(headers.WX_CODE) || '');
     let rawData = String(req.header(headers.WX_RAW_DATA) || '');
     let signature = String(req.header(headers.WX_SIGNATURE) || '');
+    let encryptedData = String(req.header(headers.WX_ENCRYPTED_DATA) || '');
+    let iv = String(req.header(headers.WX_IV) || '');
 
     let wxUserInfo, sessionKey, openId;
 
     // 1、`code` not passed
     if (!code) {
-        return next();
+        let error = new Error('not found `code`');
+        return res.json(wrapError(error, { reason: errors.ERR_SESSION_CODE_NOT_EXIST }));
     }
 
     // 2、`rawData` not passed
@@ -71,6 +77,21 @@ const handler = co.wrap(function *(req, res, next) {
 
     try {
         wxUserInfo.openId = openId;
+        
+        let pc = new WXBizDataCrypt(config.appId, sessionKey);
+        let encryptedUserInfo = pc.decryptData(encryptedData , iv);
+        wxUserInfo = Object.assign(wxUserInfo, encryptedUserInfo);
+
+        let data = {unionid: wxUserInfo.unionId};
+        let resp = (yield needle.post(config.DJANGO_USERINFO, data, {json: true, timeout: config.REQ_TIMEOUT}))[0];
+        let body = resp.body;
+        if(!body.userid) {
+            let error = new Error('get userinfo from django error');
+            error.detail = body;
+            throw error;
+        }
+
+        wxUserInfo.userId = body.userid;
 
         let oldCode = yield store.get(openId);
         oldCode && (yield store.del(oldCode));

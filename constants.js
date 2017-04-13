@@ -3,11 +3,14 @@ module.exports = {
         WX_CODE: 'X-WX-Code',
         WX_RAW_DATA: 'X-WX-RawData',
         WX_SIGNATURE: 'X-WX-Signature',
+        WX_ENCRYPTED_DATA: 'X-WX-Encrypted-Data',
+        WX_IV: 'X-WX-IV',
     },
 
     errors: {
         ERR_SESSION_EXPIRED: 'ERR_SESSION_EXPIRED',
         ERR_SESSION_KEY_EXCHANGE_FAILED: 'ERR_SESSION_KEY_EXCHANGE_FAILED',
+        ERR_SESSION_CODE_NOT_EXIST: 'ERR_SESSION_CODE_NOT_EXIST',
         ERR_UNTRUSTED_RAW_DATA: 'ERR_UNTRUSTED_RAW_DATA',
     },
 
