@@ -31,7 +31,7 @@ const handler = co.wrap(function *(req, res, next) {
     // 1、`code` not passed
     if (!code) {
         let error = new Error('not found `code`');
-        return res.json(wrapError(error, { reason: errors.ERR_SESSION_CODE_NOT_EXIST }));
+        return next(wrapError(error, { reason: errors.ERR_SESSION_CODE_NOT_EXIST }));
     }
 
     // 2、`rawData` not passed
@@ -44,7 +44,7 @@ const handler = co.wrap(function *(req, res, next) {
 
         if (!wxUserInfo) {
             let error = new Error('`wxUserInfo` not found by `code`');
-            return res.json(wrapError(error, { reason: errors.ERR_SESSION_EXPIRED }));
+            return next(wrapError(error, { reason: errors.ERR_SESSION_EXPIRED }));
         }
 
         req.$wxUserInfo = wxUserInfo;
@@ -57,7 +57,7 @@ const handler = co.wrap(function *(req, res, next) {
         rawData = decodeURIComponent(rawData);
         wxUserInfo = JSON.parse(rawData);
     } catch (error) {
-        return res.json(wrapError(error));
+        return next(wrapError(error));
     }
 
     if (config.ignoreSignature === true) {
@@ -66,19 +66,19 @@ const handler = co.wrap(function *(req, res, next) {
         try {
             ({ sessionKey, openId } = yield jscode2session.exchange(code));
         } catch (error) {
-            return res.json(wrapError(error, { reason: errors.ERR_SESSION_KEY_EXCHANGE_FAILED }));
+            return next(wrapError(error, { reason: errors.ERR_SESSION_KEY_EXCHANGE_FAILED }));
         }
 
         // check signature
         if (sha1(rawData + sessionKey) !== signature) {
             let error = new Error('untrusted raw data');
-            return res.json(wrapError(error, { reason: errors.ERR_UNTRUSTED_RAW_DATA }));
+            return next(wrapError(error, { reason: errors.ERR_UNTRUSTED_RAW_DATA }));
         }
     }
 
     try {
         wxUserInfo.openId = openId;
-        
+
         let pc = new WXBizDataCrypt(config.appId, sessionKey);
         let encryptedUserInfo = pc.decryptData(encryptedData , iv);
         wxUserInfo = Object.assign(wxUserInfo, encryptedUserInfo);
