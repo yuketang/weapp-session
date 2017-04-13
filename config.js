@@ -13,4 +13,7 @@ module.exports = {
 
     ignoreSignature: false,
     ignore: () => false,
+
+    USERINFO_URL: '',
+    REQ_TIMEOUT: 3000
 };

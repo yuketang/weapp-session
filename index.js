@@ -5,7 +5,8 @@ const config = require('./config');
 const sha1 = require('./lib/sha1');
 const needle = require('./lib/needle');
 const makeStore = require('./lib/makeStore');
-const wrapError = require('./lib/wrapError');
+const logger = config.logger || console;
+const wrapError = config.errorHandle || require('./lib/wrapError');
 const { headers, errors } = require('./constants');
 const jscode2session = require('./lib/jscode2session');
 const WXBizDataCrypt = require('./lib/WXBizDataCrypt');
@@ -83,7 +84,7 @@ const handler = co.wrap(function *(req, res, next) {
         wxUserInfo = Object.assign(wxUserInfo, encryptedUserInfo);
 
         let data = {unionid: wxUserInfo.unionId};
-        let resp = (yield needle.post(config.DJANGO_USERINFO, data, {json: true, timeout: config.REQ_TIMEOUT}))[0];
+        let resp = (yield needle.post(config.USERINFO_URL, data, {json: true, timeout: config.REQ_TIMEOUT}))[0];
         let body = resp.body;
         if(!body.userid) {
             let error = new Error('get userinfo from django error');
@@ -107,7 +108,6 @@ const handler = co.wrap(function *(req, res, next) {
     }
 
 });
-module.exports.wrapError = wrapError;
 module.exports = (options = {}) => {
     if (!store) {
         merge.recursive(config, options);
