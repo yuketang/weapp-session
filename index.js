@@ -107,7 +107,7 @@ const handler = co.wrap(function *(req, res, next) {
     }
 
 });
-
+module.exports.wrapError = wrapError;
 module.exports = (options = {}) => {
     if (!store) {
         merge.recursive(config, options);
