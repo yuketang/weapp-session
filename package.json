@@ -1,22 +1,101 @@
 {
-  "name": "weapp-session",
-  "version": "0.3.0",
-  "description": "为微信小程序提供会话管理功能",
-  "main": "index.js",
-  "author": "CFETeam",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/CFETeam/weapp-session.git"
+  "_args": [
+    [
+      {
+        "raw": "weapp-session@^0.3.0",
+        "scope": null,
+        "escapedName": "weapp-session",
+        "name": "weapp-session",
+        "rawSpec": "^0.3.0",
+        "spec": ">=0.3.0 <0.4.0",
+        "type": "range"
+      },
+      "/Users/crazyjingling/Documents/xuetangx/projects/weapp-session"
+    ]
+  ],
+  "_cnpm_publish_time": 1474970592040,
+  "_from": "weapp-session@>=0.3.0 <0.4.0",
+  "_hasShrinkwrap": false,
+  "_id": "weapp-session@0.3.0",
+  "_inCache": true,
+  "_location": "/weapp-session",
+  "_nodeVersion": "6.2.2",
+  "_npmOperationalInternal": {
+    "host": "packages-12-west.internal.npmjs.com",
+    "tmp": "tmp/weapp-session-0.3.0.tgz_1474970590173_0.8202212380710989"
   },
-  "engines": {
-    "node": ">=6.0.0"
+  "_npmUser": {
+    "name": "qcloud",
+    "email": "techird@qq.com"
+  },
+  "_npmVersion": "3.9.5",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "weapp-session@^0.3.0",
+    "scope": null,
+    "escapedName": "weapp-session",
+    "name": "weapp-session",
+    "rawSpec": "^0.3.0",
+    "spec": ">=0.3.0 <0.4.0",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npm.taobao.org/weapp-session/download/weapp-session-0.3.0.tgz",
+  "_shasum": "472339a1fbf98fad1d6bae0c28cf3837d5038b65",
+  "_shrinkwrap": null,
+  "_spec": "weapp-session@^0.3.0",
+  "_where": "/Users/crazyjingling/Documents/xuetangx/projects/weapp-session",
+  "author": {
+    "name": "CFETeam"
+  },
+  "bugs": {
+    "url": "https://github.com/CFETeam/weapp-session/issues"
   },
   "dependencies": {
     "co": "^4.6.0",
     "es6-promisify": "^4.1.0",
     "merge": "^1.2.0",
+    "needle": "^1.6.0",
+    "pify": "^2.3.0",
     "redis": "^2.6.2",
     "request": "^2.75.0"
-  }
+  },
+  "description": "为微信小程序提供会话管理功能",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "shasum": "472339a1fbf98fad1d6bae0c28cf3837d5038b65",
+    "size": 72813,
+    "noattachment": false,
+    "tarball": "http://registry.npm.taobao.org/weapp-session/download/weapp-session-0.3.0.tgz"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "gitHead": "2df83be644df1a427459e220c5145852044aa655",
+  "homepage": "https://github.com/CFETeam/weapp-session#readme",
+  "license": "MIT",
+  "main": "index.js",
+  "maintainers": [
+    {
+      "name": "miusuncle",
+      "email": "miusuncle@gmail.com"
+    },
+    {
+      "name": "qcloud",
+      "email": "techird@qq.com"
+    }
+  ],
+  "name": "weapp-session",
+  "optionalDependencies": {},
+  "publish_time": 1474970592040,
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CFETeam/weapp-session.git"
+  },
+  "scripts": {},
+  "version": "0.3.0"
 }

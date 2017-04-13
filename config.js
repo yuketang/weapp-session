@@ -3,8 +3,7 @@ module.exports = {
     appSecret: '',
 
     redisConfig: {
-        host: '127.0.0.1',
-        port: '6379',
+        startupNodes: [],
         password: '',
         db: 0,
         prefix: 'weapp-session:',
