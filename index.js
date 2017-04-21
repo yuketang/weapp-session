@@ -38,7 +38,7 @@ const handler = co.wrap(function *(req, res, next) {
     if (!rawData) {
         try {
             wxUserInfo = yield store.get(code);
-            wxUserInfo && wxUserInfo = JSON.parse(wxUserInfo);
+            if(wxUserInfo) wxUserInfo = JSON.parse(wxUserInfo);
         } catch (error) {
             return next(error);
         }
