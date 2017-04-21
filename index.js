@@ -38,6 +38,7 @@ const handler = co.wrap(function *(req, res, next) {
     if (!rawData) {
         try {
             wxUserInfo = yield store.get(code);
+            wxUserInfo && wxUserInfo = JSON.parse(wxUserInfo);
         } catch (error) {
             return next(error);
         }
@@ -78,7 +79,7 @@ const handler = co.wrap(function *(req, res, next) {
 
     try {
         wxUserInfo.openId = openId;
-        
+
         let pc = new WXBizDataCrypt(config.appId, sessionKey);
         let encryptedUserInfo = pc.decryptData(encryptedData , iv);
         wxUserInfo = Object.assign(wxUserInfo, encryptedUserInfo);
@@ -100,7 +101,7 @@ const handler = co.wrap(function *(req, res, next) {
         data.ip = req.ip;
 
         let resp = (yield needle.post(config.USERINFO_URL, data, {json: true, timeout: config.REQ_TIMEOUT}))[0];
-        
+
         let body = resp.body;
 
         if(!body.UserID) {
@@ -111,7 +112,7 @@ const handler = co.wrap(function *(req, res, next) {
 
         wxUserInfo.userId = body.UserID;
 
-        let oldCode = JSON.parse(yield store.get(openId));
+        let oldCode = yield store.get(openId);
         oldCode && (yield store.del(oldCode));
 
         yield store.set(code, JSON.stringify(wxUserInfo), 'EX', config.redisConfig.ttl);
@@ -121,6 +122,7 @@ const handler = co.wrap(function *(req, res, next) {
         return next();
 
     } catch (error) {
+
         return next(error);
     }
 
