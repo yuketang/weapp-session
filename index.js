@@ -78,21 +78,38 @@ const handler = co.wrap(function *(req, res, next) {
 
     try {
         wxUserInfo.openId = openId;
-
+        
         let pc = new WXBizDataCrypt(config.appId, sessionKey);
         let encryptedUserInfo = pc.decryptData(encryptedData , iv);
         wxUserInfo = Object.assign(wxUserInfo, encryptedUserInfo);
 
-        let data = {unionid: wxUserInfo.unionId};
+        let data = {};
+        data.user = {
+            "userid": wxUserInfo.userId,
+            "subscribe": wxUserInfo.subscribe,
+            "mina_openid": wxUserInfo.openId,
+            "nickname": wxUserInfo.nickName,
+            "sex": wxUserInfo.sex,
+            "language": wxUserInfo.language,
+            "headimgurl": wxUserInfo.avatarUrl,
+            "unionid": wxUserInfo.unionId
+        }
+        data.user.mina_openid = wxUserInfo.openId;
+        data.user.openId = undefined;
+        data.need_ppt_config = true;
+        data.ip = req.ip;
+
         let resp = (yield needle.post(config.USERINFO_URL, data, {json: true, timeout: config.REQ_TIMEOUT}))[0];
+        
         let body = resp.body;
-        if(!body.userid) {
+
+        if(!body.UserID) {
             let error = new Error('get userinfo from django error');
             error.detail = body;
             throw error;
         }
 
-        wxUserInfo.userId = body.userid;
+        wxUserInfo.userId = body.UserID;
 
         let oldCode = yield store.get(openId);
         oldCode && (yield store.del(oldCode));
