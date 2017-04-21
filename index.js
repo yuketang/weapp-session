@@ -1,10 +1,10 @@
 const co = require('co');
 const merge = require('merge');
+const Redis = require('ioredis');
 const promisify = require('es6-promisify');
 const config = require('./config');
 const sha1 = require('./lib/sha1');
 const needle = require('./lib/needle');
-const makeStore = require('./lib/makeStore');
 const logger = config.logger || console;
 const wrapError = config.errorHandle || require('./lib/wrapError');
 const { headers, errors } = require('./constants');
@@ -111,11 +111,11 @@ const handler = co.wrap(function *(req, res, next) {
 
         wxUserInfo.userId = body.UserID;
 
-        let oldCode = yield store.get(openId);
+        let oldCode = JSON.parse(yield store.get(openId));
         oldCode && (yield store.del(oldCode));
 
-        yield store.set(code, wxUserInfo, config.redisConfig.ttl);
-        yield store.set(openId, code, config.redisConfig.ttl);
+        yield store.set(code, JSON.stringify(wxUserInfo), 'EX', config.redisConfig.ttl);
+        yield store.set(openId, code, 'EX', config.redisConfig.ttl);
 
         req.$wxUserInfo = wxUserInfo;
         return next();
@@ -128,7 +128,8 @@ const handler = co.wrap(function *(req, res, next) {
 module.exports = (options = {}) => {
     if (!store) {
         merge.recursive(config, options);
-        store = makeStore(config.redisConfig);
+        let redisConfig = options.redisConfig || config.redisConfig;
+        store = new Redis.Cluster(redisConfig.startupNodes, redisConfig.redisOptions);
         return handler;
     }
 
