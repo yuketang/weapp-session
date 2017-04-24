@@ -33,6 +33,7 @@ const handler = co.wrap(function *(req, res, next) {
         let error = new Error('not found `code`');
         return next(wrapError(error, { reason: errors.ERR_SESSION_CODE_NOT_EXIST }));
     }
+    console.log('=================================code', code)
 
     // 2、`rawData` not passed
     if (!rawData) {
@@ -111,6 +112,7 @@ const handler = co.wrap(function *(req, res, next) {
         }
 
         wxUserInfo.userId = body.UserID;
+        wxUserInfo.userAuth = body.Auth;
 
         let oldCode = yield store.get(openId);
         oldCode && (yield store.del(oldCode));
