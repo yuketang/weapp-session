@@ -5,7 +5,6 @@ const promisify = require('es6-promisify');
 const config = require('./config');
 const sha1 = require('./lib/sha1');
 const needle = require('./lib/needle');
-const logger = config.logger || console;
 const wrapError = config.errorHandle || require('./lib/wrapError');
 const { headers, errors } = require('./constants');
 const jscode2session = require('./lib/jscode2session');
@@ -14,6 +13,7 @@ const WXBizDataCrypt = require('./lib/WXBizDataCrypt');
 let store;
 
 const handler = co.wrap(function *(req, res, next) {
+
     req.$wxUserInfo = null;
 
     if (config.ignore(req, res)) {
@@ -33,7 +33,6 @@ const handler = co.wrap(function *(req, res, next) {
         let error = new Error('not found `code`');
         return next(wrapError(error, { reason: errors.ERR_SESSION_CODE_NOT_EXIST }));
     }
-    console.log('=================================code', code)
 
     // 2、`rawData` not passed
     if (!rawData) {
@@ -83,6 +82,7 @@ const handler = co.wrap(function *(req, res, next) {
 
         let pc = new WXBizDataCrypt(config.appId, sessionKey);
         let encryptedUserInfo = pc.decryptData(encryptedData , iv);
+
         wxUserInfo = Object.assign(wxUserInfo, encryptedUserInfo);
 
         let data = {};
@@ -112,7 +112,7 @@ const handler = co.wrap(function *(req, res, next) {
         }
 
         wxUserInfo.userId = body.UserID;
-        wxUserInfo.userAuth = body.Auth;
+        wxUserInfo.userId = body.UserID;
 
         let oldCode = yield store.get(openId);
         oldCode && (yield store.del(oldCode));
@@ -132,8 +132,9 @@ const handler = co.wrap(function *(req, res, next) {
 module.exports = (options = {}) => {
     if (!store) {
         merge.recursive(config, options);
-        let redisConfig = options.redisConfig || config.redisConfig;
-        store = new Redis.Cluster(redisConfig.startupNodes, redisConfig.redisOptions);
+        let redisConfig = options.redisConfig || config.redisConfig; //todo: redis cluster
+
+        store = options.store || new Redis.Cluster(redisConfig.startupNodes, redisConfig.redisOptions);
         return handler;
     }
 
