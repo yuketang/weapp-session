@@ -117,7 +117,7 @@ const handler = co.wrap(function *(req, res, next) {
         wxUserInfo.School = body.School;
         wxUserInfo.Gender = body.Gender;
         wxUserInfo.YearOfBirth = body.YearOfBirth;
-        wxUserInfo.avatarUrl = body.Avatar;
+        wxUserInfo.avatarUrl = body.Avatar || wxUserInfo.avatarUrl;
         
         
         let oldCode = yield store.get(openId);
