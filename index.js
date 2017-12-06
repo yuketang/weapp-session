@@ -112,6 +112,7 @@ const handler = co.wrap(function *(req, res, next) {
         }
 
         wxUserInfo.userId = body.UserID;
+        
         wxUserInfo.profile_edit_status = body.profile_edit_status;
         wxUserInfo.nickName = body.Name || body.Nickname || wxUserInfo.nickName;
         wxUserInfo.School = body.School;
