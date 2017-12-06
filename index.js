@@ -113,7 +113,13 @@ const handler = co.wrap(function *(req, res, next) {
 
         wxUserInfo.userId = body.UserID;
         wxUserInfo.profile_edit_status = body.profile_edit_status;
-
+        wxUserInfo.name = body.Name || body.Nickname || wxUserInfo.name;
+        wxUserInfo.School = body.School;
+        wxUserInfo.Gender = body.Gender;
+        wxUserInfo.YearOfBirth = body.YearOfBirth;
+        wxUserInfo.avatarUrl = body.Avatar;
+        
+        
         let oldCode = yield store.get(openId);
         oldCode && (yield store.del(oldCode));
 
