@@ -106,7 +106,7 @@ const handler = co.wrap(function *(req, res, next) {
         let body = resp.body;
 
         if(!body.UserID) {
-            let error = new Error('get userinfo from django error');
+            let error = new Error('get userinfo from django error ==> body: ' + JSON.stringify(body));
             error.detail = body;
             throw error;
         }
