@@ -105,7 +105,7 @@ const handler = co.wrap(function* (req, res, next) {
         if(config.INNER_HEADER) headers[config.INNER_HEADER] = inner_header;
         let resp = (yield needle.post(config.USERINFO_URL, data, {
             json: true,
-            headers
+            headers,
             timeout: config.REQ_TIMEOUT
         }))[0];
 
