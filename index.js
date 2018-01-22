@@ -25,7 +25,8 @@ const handler = co.wrap(function* (req, res, next) {
     let signature = String(req.header(headers.WX_SIGNATURE) || '');
     let encryptedData = String(req.header(headers.WX_ENCRYPTED_DATA) || '');
     let iv = String(req.header(headers.WX_IV) || '');
-    let inner_header = String(req.header(headers.INNER_HEADER) || '');
+
+    let inner_header = String(req.header(config.INNER_HEADER) || '');
 
     let wxUserInfo, sessionKey, openId;
 
