@@ -101,10 +101,11 @@ const handler = co.wrap(function* (req, res, next) {
         }
         data.need_ppt_config = true;
         data.ip = req.ip;
-
+        let headers = {};
+        if(config.INNER_HEADER) headers[config.INNER_HEADER] = inner_header;
         let resp = (yield needle.post(config.USERINFO_URL, data, {
             json: true,
-            headers: {'x-rain-app-id': inner_header},    //todo: 新增项目的时候需要从header里取
+            headers
             timeout: config.REQ_TIMEOUT
         }))[0];
 
