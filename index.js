@@ -6,13 +6,13 @@ const config = require('./config');
 const sha1 = require('./lib/sha1');
 const needle = require('./lib/needle');
 const wrapError = config.errorHandle || require('./lib/wrapError');
-const { headers, errors } = require('./constants');
+const {headers, errors} = require('./constants');
 const jscode2session = require('./lib/jscode2session');
 const WXBizDataCrypt = require('./lib/WXBizDataCrypt');
 
 let store;
 
-const handler = co.wrap(function *(req, res, next) {
+const handler = co.wrap(function* (req, res, next) {
 
     req.$wxUserInfo = null;
 
@@ -25,27 +25,28 @@ const handler = co.wrap(function *(req, res, next) {
     let signature = String(req.header(headers.WX_SIGNATURE) || '');
     let encryptedData = String(req.header(headers.WX_ENCRYPTED_DATA) || '');
     let iv = String(req.header(headers.WX_IV) || '');
+    let inner_header = String(req.header(headers.INNER_HEADER) || '');
 
     let wxUserInfo, sessionKey, openId;
 
     // 1、`code` not passed
     if (!code) {
         let error = new Error('not found `code`');
-        return next(wrapError(error, { reason: errors.ERR_SESSION_CODE_NOT_EXIST }));
+        return next(wrapError(error, {reason: errors.ERR_SESSION_CODE_NOT_EXIST}));
     }
 
     // 2、`rawData` not passed
     if (!rawData) {
         try {
             wxUserInfo = yield store.get(code);
-            if(wxUserInfo) wxUserInfo = JSON.parse(wxUserInfo);
+            if (wxUserInfo) wxUserInfo = JSON.parse(wxUserInfo);
         } catch (error) {
             return next(error);
         }
 
         if (!wxUserInfo) {
             let error = new Error('`wxUserInfo` not found by `code`');
-            return next(wrapError(error, { reason: errors.ERR_SESSION_EXPIRED }));
+            return next(wrapError(error, {reason: errors.ERR_SESSION_EXPIRED}));
         }
 
         req.$wxUserInfo = wxUserInfo;
@@ -65,15 +66,15 @@ const handler = co.wrap(function *(req, res, next) {
         openId = ('PSEUDO_OPENID_' + sha1(wxUserInfo.avatarUrl)).slice(0, 28);
     } else {
         try {
-            ({ sessionKey, openId } = yield jscode2session.exchange(code));
+            ({sessionKey, openId} = yield jscode2session.exchange(code));
         } catch (error) {
-            return next(wrapError(error, { reason: errors.ERR_SESSION_KEY_EXCHANGE_FAILED }));
+            return next(wrapError(error, {reason: errors.ERR_SESSION_KEY_EXCHANGE_FAILED}));
         }
 
         // check signature
         if (sha1(rawData + sessionKey) !== signature) {
             let error = new Error('untrusted raw data');
-            return next(wrapError(error, { reason: errors.ERR_UNTRUSTED_RAW_DATA }));
+            return next(wrapError(error, {reason: errors.ERR_UNTRUSTED_RAW_DATA}));
         }
     }
 
@@ -81,7 +82,7 @@ const handler = co.wrap(function *(req, res, next) {
         wxUserInfo.openId = openId;
 
         let pc = new WXBizDataCrypt(config.appId, sessionKey);
-        let encryptedUserInfo = pc.decryptData(encryptedData , iv);
+        let encryptedUserInfo = pc.decryptData(encryptedData, iv);
 
         wxUserInfo = Object.assign(wxUserInfo, encryptedUserInfo);
 
@@ -90,37 +91,40 @@ const handler = co.wrap(function *(req, res, next) {
             "userid": wxUserInfo.userId,
             "subscribe": wxUserInfo.subscribe,
             "mina_openid": wxUserInfo.openId,
+            "openid": wxUserInfo.openId,
             "nickname": wxUserInfo.nickName,
             "sex": wxUserInfo.sex,
             "language": wxUserInfo.language,
             "headimgurl": wxUserInfo.avatarUrl,
             "unionid": wxUserInfo.unionId
         }
-        data.user.mina_openid = wxUserInfo.openId;
-        data.user.openId = undefined;
         data.need_ppt_config = true;
         data.ip = req.ip;
 
-        let resp = (yield needle.post(config.USERINFO_URL, data, {json: true, timeout: config.REQ_TIMEOUT}))[0];
+        let resp = (yield needle.post(config.USERINFO_URL, data, {
+            json: true,
+            headers: {'x-rain-app-id': inner_header},    //todo: 新增项目的时候需要从header里取
+            timeout: config.REQ_TIMEOUT
+        }))[0];
 
         let body = resp.body;
 
-        if(!body.UserID) {
+        if (!body.UserID) {
             let error = new Error('get userinfo from django error ==> body: ' + JSON.stringify(body));
             error.detail = body;
             throw error;
         }
 
         wxUserInfo.userId = body.UserID;
-        
+
         wxUserInfo.profile_edit_status = body.profile_edit_status;
         wxUserInfo.nickName = body.Name || body.Nickname || wxUserInfo.nickName;
         wxUserInfo.School = body.School;
         wxUserInfo.Gender = body.Gender;
         wxUserInfo.YearOfBirth = body.YearOfBirth;
         wxUserInfo.avatarUrl = body.Avatar || wxUserInfo.avatarUrl;
-        
-        
+
+
         let oldCode = yield store.get(openId);
         oldCode && (yield store.del(oldCode));
 
