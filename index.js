@@ -26,7 +26,7 @@ const handler = co.wrap(function* (req, res, next) {
     let encryptedData = String(req.header(headers.WX_ENCRYPTED_DATA) || '');
     let iv = String(req.header(headers.WX_IV) || '');
 
-    let inner_header = String(req.header(config.INNER_HEADER) || '');
+    let inner_header = String(req.get(config.INNER_HEADER) || '');
 
     let wxUserInfo, sessionKey, openId;
 
@@ -119,6 +119,7 @@ const handler = co.wrap(function* (req, res, next) {
 
         wxUserInfo.userId = body.UserID;
 
+        wxUserInfo.subscribe_status = body.subscribe_status;
         wxUserInfo.profile_edit_status = body.profile_edit_status;
         wxUserInfo.nickName = body.Name || body.Nickname || wxUserInfo.nickName;
         wxUserInfo.School = body.School;
